@@ -6,11 +6,11 @@ import java.util.Map;
 /**
  * @author Sim
  */
-public interface SavedFinder {
+public interface ExistedFinder {
 
     List<Map<String, Object>> find(Object cond);
 
-    interface NonRepeatableSavedCond {
+    interface NonRepeatableExistedCond {
 
         Object build(Class poClzz, List<String> selectList, Map<String,List<Object>> inCondMap);
 

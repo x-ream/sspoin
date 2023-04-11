@@ -125,7 +125,7 @@ public class EquipTemplate implements Templated {
                 parsed,
                 result,
                 Equipment.class,//实体类
-                this.nonRepeatableSavedCond,//查询条件构建, 获得cond
+                this.nonRepeatableExistedCond,//查询条件构建, 获得cond
                 cond -> this.equipmentFindService.listResultMap((Criteria.ResultMapCriteria) cond)
         );
 

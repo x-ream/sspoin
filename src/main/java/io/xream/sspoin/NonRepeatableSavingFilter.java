@@ -12,29 +12,30 @@ public class NonRepeatableSavingFilter {
     public static void filter(
             Errors errors,Parsed parsed, Result result,
             Class poClzz,
-            SavedFinder.NonRepeatableSavedCond nonRepeatableSavedCond,
-            SavedFinder savedFinder) {
+            ExistedFinder.NonRepeatableExistedCond nonRepeatableExistedCond,
+            ExistedFinder existedFinder) {
 
         if (errors == null) {
             throw new IllegalArgumentException("errors can not null");
         }
 
-        if (nonRepeatableSavedCond == null) {
+        if (nonRepeatableExistedCond == null) {
             throw new IllegalArgumentException("nonRepeatableSavedCond can not null");
         }
 
-        if (savedFinder == null) {
+        if (existedFinder == null) {
             throw new IllegalArgumentException("savedFinder can not null");
         }
 
         Set<String> poPropSet = poFieldNames(poClzz);
 
-        Object cond = nonRepeatableSavedCond.build(
+        Object cond = nonRepeatableExistedCond.build(
+                poClzz,
                 buildSelectList(poPropSet,result),
                 buildInConditions(poPropSet,result)
         );
 
-        List<Map<String, Object>> poExistList = savedFinder.find(cond);
+        List<Map<String, Object>> poExistList = existedFinder.find(cond);
         if (poExistList.isEmpty())
             return;
 
