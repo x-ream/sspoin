@@ -100,7 +100,7 @@ public class EquipTemplate implements Templated {
         MultipartFile file = multipartRequest.getFile("file");
          
         final String fileName = file.getOriginalFilename();
-        final Parsed parsed = Parsed.of(EquipTemplate.class);
+        final Parsed parsed = Parsed.of(EquipTemplate.class);//解析模板类
         final Errors errors = Errors.of(parsed, fileName);
         Result<EquipTemplate> result = null;
         InputStream in = null;
@@ -124,8 +124,8 @@ public class EquipTemplate implements Templated {
                 errors,
                 parsed,
                 result,
-                Equipment.class,
-                this.nonRepeatableSavedCond,
+                Equipment.class,//实体类
+                this.nonRepeatableSavedCond,//查询条件构建, 获得cond
                 cond -> this.equipmentFindService.listResultMap((Criteria.ResultMapCriteria) cond)
         );
 
