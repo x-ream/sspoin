@@ -12,7 +12,7 @@ public interface SavedFinder {
 
     interface NonRepeatableSavedCond {
 
-        Object build(List<String> selectList, Map<String,List<Object>> inCondMap);
+        Object build(Class poClzz, List<String> selectList, Map<String,List<Object>> inCondMap);
 
     }
 }
