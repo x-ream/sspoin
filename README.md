@@ -30,7 +30,7 @@ public class EquipTemplate implements Templated {
     @Template.Row(meta="RFID", nonRepeatable = true)
     private String rfid;
     @Template.Row(meta="数量")
-    private long amount;//数量*
+    private Long qty;//数量*
     @Template.Row(meta="出厂日期")
     private Date manuDate;//出厂日期
 
@@ -70,12 +70,12 @@ public class EquipTemplate implements Templated {
         this.rfid = rfid;
     }
 
-    public long getAmount() {
-        return amount;
+    public Long getQty() {
+        return qty;
     }
 
-    public void setAmount(long amount) {
-        this.amount = amount;
+    public void setQty(Long qty) {
+        this.qty = qty;
     }
 
     public Date getManuDate() {
@@ -108,7 +108,7 @@ public class EquipTemplate implements Templated {
             in = file.getInputStream();
             result = ExcelReader.read(errors, parsed, fileName, in); //读取数据
             if (result.getList().isEmpty()) {
-                return ViewEntity.ok();
+                return ResponseEntity.ok();
             }
         } finally {
             if (in != null) {
@@ -119,7 +119,7 @@ public class EquipTemplate implements Templated {
                 }
             }
         }
-        //过滤掉已存在的数据
+        //如果不需要更新已有的数据，就过滤掉已存在的数据
         NonRepeatableSavingFilter.filter(
                 errors,
                 parsed,
@@ -131,7 +131,8 @@ public class EquipTemplate implements Templated {
 
         // TODO: 写入数据库 result.getList()
         
-        // TODO: 返回 errors
+        // 返回 errors
+        return ResponseEntity.ok(errors);
 ```
 
 ### 3. 请求下载错误数据excel文件
