@@ -23,6 +23,7 @@ public class Parsed {
     private String zeroError;
     private String repeatedError;
     private String existError;
+    private String refreshOn;
     private final Map<String, Field> metaFieldMap = new HashMap<>();
     private final Map<Field, Boolean> nonRepeatableMap = new HashMap<>();
     private final Map<Field, String> metaMap = new HashMap<>();
@@ -139,6 +140,14 @@ public class Parsed {
         nonRepeatableMap.put(key, value);
     }
 
+    public String getRefreshOn() {
+        return refreshOn;
+    }
+
+    public void setRefreshOn(String refreshOn) {
+        this.refreshOn = refreshOn;
+    }
+
     public Map<Field, Boolean> getNonRepeatableMap() {
         return nonRepeatableMap;
     }
@@ -162,6 +171,7 @@ public class Parsed {
         parsed.setZeroError(template.zeroError());
         parsed.setRepeatedError(template.repeatedError());
         parsed.setExistError(template.existsError());
+        parsed.setRefreshOn(template.refreshOn());
 
         Field[] fields = null;
         Object obj = null;

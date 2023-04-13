@@ -20,6 +20,10 @@ public @interface Template {
     String zeroError() default "can not be zero";
     String repeatedError() default "can not be repeated";
     String existsError() default "exists already";
+    /**
+     * designed to refresh a piece of table only by a column
+     */
+    String refreshOn() default "";
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD})

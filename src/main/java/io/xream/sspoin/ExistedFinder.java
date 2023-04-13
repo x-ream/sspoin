@@ -8,11 +8,9 @@ import java.util.Map;
  */
 public interface ExistedFinder {
 
+    /**
+     * find result from DB or by a remote call
+     */
     List<Map<String, Object>> find(Object cond);
-
-    interface NonRepeatableExistedCond {
-
-        Object build(Class poClzz, List<String> selectList, Map<String,List<Object>> inCondMap);
-
-    }
+    
 }
