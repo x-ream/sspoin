@@ -1,18 +1,21 @@
 package io.xream.sspoin;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 /**
  * @author Sim
  */
-public class Result<T> {
+public class Paras<T> {
 
     private List<T> list;
     private List<String> nonRepeatableProps;
+    private List<Field> paraFields;
 
-    public Result(List<T> list, List<String> nonRepeatableProps) {
+    public Paras(List<T> list, List<String> nonRepeatableProps, List<Field> paraFields) {
         this.list = list;
         this.nonRepeatableProps = nonRepeatableProps;
+        this.paraFields = paraFields;
     }
 
     public List<T> getList() {
@@ -29,5 +32,13 @@ public class Result<T> {
 
     public void setNonRepeatableProps(List<String> nonRepeatableProps) {
         this.nonRepeatableProps = nonRepeatableProps;
+    }
+
+    public List<Field> getParaFields() {
+        return paraFields;
+    }
+
+    public void setParaFields(List<Field> paraFields) {
+        this.paraFields = paraFields;
     }
 }

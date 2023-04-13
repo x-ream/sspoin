@@ -15,7 +15,9 @@ public class NonRepeatableFilter {
     /**
      * if config refreshOn and has the meta in sheet, then can invoke the method
      */
-    public static void refreshFirst(Parsed parsed, Result result,
+    public static void refreshFirst(String refreshOn,
+                                    List<Field> paraFields,
+                                    List paraList,
                                     Class poClzz,
                                     ToRefreshCond toRefreshCond,
                                     ExistedToRefresh existedToRefresh) {
@@ -33,12 +35,12 @@ public class NonRepeatableFilter {
         }
 
         //if sheet has the refreshOn;
-        if (StringUtils.isBlank(parsed.getRefreshOn()))
+        if (StringUtils.isBlank(refreshOn))
             return;
 
         boolean hasRefreshOn = false;
-        for (Field f : parsed.getMetaFieldMap().values()){
-            if (f.getName().equals(parsed.getRefreshOn())) {
+        for (Field f : paraFields){
+            if (f.getName().equals(refreshOn)) {
                 hasRefreshOn = true;
                 break;
             }
@@ -47,28 +49,30 @@ public class NonRepeatableFilter {
         if (!hasRefreshOn)
             return;
 
-        Object existsCond = toRefreshCond.buildExistsCond(poClzz,parsed.getRefreshOn(),
-                buildInCondition(parsed.getRefreshOn(),result));
+        Object existsCond = toRefreshCond.buildExistsCond(poClzz,refreshOn,
+                buildInCondition(refreshOn,paraList));
 
         List<Object> existsValues = existedToRefresh.existsValues(existsCond);
 
         for (Object value : existsValues) {
 
             Object cond = toRefreshCond.buildRefreshCond(poClzz,
-                    buildToRefreshMap(parsed,parsed.getRefreshOn(),value,result),
-                    parsed.getRefreshOn(),
+                    buildToRefreshMap(paraFields,refreshOn,value,paraList),
+                    refreshOn,
                     value);
 
             existedToRefresh.refresh(cond);
 
         }
 
-        filterRefreshed(parsed.getRefreshOn(),existsValues,result.getList());
+        filterRefreshed(refreshOn,existsValues,paraList);
     }
 
 
     public static void beforeCreate(
-            Errors errors,Parsed parsed, Result result,
+            Errors errors,Parsed parsed,
+            List<String> nonRepeatableProps,
+            List paraList,
             Class poClzz,
             NonRepeatableExistedCond nonRepeatableExistedCond,
             ExistedFinder existedFinder) {
@@ -94,15 +98,15 @@ public class NonRepeatableFilter {
 
         Object cond = nonRepeatableExistedCond.build(
                 poClzz,
-                buildSelectList(poPropSet,result),
-                buildInConditions(poPropSet,result)
+                buildSelectList(poPropSet,nonRepeatableProps),
+                buildInConditions(poPropSet,nonRepeatableProps,paraList)
         );
 
         List<Map<String, Object>> poExistList = existedFinder.find(cond);
         if (poExistList.isEmpty())
             return;
 
-        handleRepeated(poPropSet,poExistList,errors,parsed,result);
+        handleRepeated(poPropSet,poExistList,errors,parsed,nonRepeatableProps,paraList);
     }
 
     private static Set<String> poFieldNames(Class poClzz) {
@@ -118,20 +122,20 @@ public class NonRepeatableFilter {
         return propSet;
     }
 
-    private static List<String> buildSelectList(Set<String> poPropSet, Result result) {
+    private static List<String> buildSelectList(Set<String> poPropSet, List<String> nonRepeatableProps) {
         List<String> selectList = new ArrayList<>();
-        for (Object obj : result.getNonRepeatableProps()) {
-            if (poPropSet.contains(obj)) {
-                selectList.add((String)obj);
+        for (String prop : nonRepeatableProps) {
+            if (poPropSet.contains(prop)) {
+                selectList.add(prop);
             }
         }
         return selectList;
     }
 
-    private static List<Object> buildInCondition (String prop, Result result) {
+    private static List<Object> buildInCondition (String prop, List paraList) {
 
         List<Object> inObjList = new ArrayList<Object>();
-        for (Object o : result.getList()) {
+        for (Object o : paraList) {
 
             try {
                 Field field = o.getClass().getDeclaredField(prop);
@@ -151,10 +155,10 @@ public class NonRepeatableFilter {
     }
 
 
-    private static Map<String,Object> buildToRefreshMap(Parsed parsed, String refreshOn, Object value, Result result) {
+    private static Map<String,Object> buildToRefreshMap(List<Field> paraFieldList, String refreshOn, Object value, List paraList) {
 
 
-        for (Object o : result.getList()) {
+        for (Object o : paraList) {
 
             try {
                 Field field = o.getClass().getDeclaredField(refreshOn);
@@ -163,7 +167,7 @@ public class NonRepeatableFilter {
                 Object v = field.get(o);
                 if (String.valueOf(value).equals(String.valueOf(v))){
                     Map<String,Object> map = new HashMap<>();
-                    for (Field f : parsed.getMetaFieldMap().values()){
+                    for (Field f : paraFieldList){
                         f.setAccessible(true);
                         String key = f.getName();
                         if (key.equals(refreshOn))
@@ -209,14 +213,15 @@ public class NonRepeatableFilter {
 
 
     private static Map<String, List<Object>> buildInConditions (Set<String> poPropSet,
-                                                         Result result) {
+                                                                List<String> nonRepeatableProps,
+                                                                List paraList) {
         Map<String, List<Object>> condMap = new HashMap<>();
-        for (Object obj : result.getNonRepeatableProps()) {
+        for (Object obj : nonRepeatableProps) {
             String prop = (String) obj;
 
             if (poPropSet.contains(prop)) {
                 List<Object> inObjList = new ArrayList<Object>();
-                for (Object o : result.getList()) {
+                for (Object o : paraList) {
                     try {
                         Field field = o.getClass().getDeclaredField(prop);
                         field.setAccessible(true);
@@ -237,10 +242,12 @@ public class NonRepeatableFilter {
 
 
      private static void handleRepeated(Set<String> poPropSet, List<Map<String,Object>> poExistList,
-                                        Errors errors, Parsed parsed, Result result) {
+                                        Errors errors, Parsed parsed,
+                                        List<String> nonRepetableProps,
+                                        List paraList) {
         Map<String, Set<Object>> exitMap = new HashMap<>();
         for (Map<String, Object> map : poExistList) {
-            for (Object obj : result.getNonRepeatableProps()) {//compare exists
+            for (Object obj : nonRepetableProps) {//compare exists
                 String prop = (String) obj;
                 if (poPropSet.contains(prop)) {
                     Set<Object> vSet = exitMap.get(prop);
@@ -256,7 +263,7 @@ public class NonRepeatableFilter {
             }
         }
 
-        for (Object obj : result.getNonRepeatableProps()) {//compare exists
+        for (Object obj : nonRepetableProps) {//compare exists
             String prop = (String) obj;
             if (poPropSet.contains(prop)) {
 
@@ -264,7 +271,7 @@ public class NonRepeatableFilter {
                 if (vSet == null)
                     continue;
 
-                for (Object para : result.getList())
+                for (Object para : paraList)
                     try {
                         Field field = parsed.getFieldByMeta(prop);
                         Object v = field.get(para);
@@ -281,6 +288,6 @@ public class NonRepeatableFilter {
                     }
             }
         }
-        ErrorAppender.append(errors,result.getList());
+        ErrorAppender.append(errors,paraList);
     }
 }

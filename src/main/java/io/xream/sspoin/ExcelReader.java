@@ -16,7 +16,7 @@ import java.util.*;
  */
 public class ExcelReader {
 
-    public static <T> Result<T> read(
+    public static <T> Paras<T> read(
             Errors errors,
             Parsed parsed,
             String filename, InputStream stream) throws Exception {
@@ -29,7 +29,8 @@ public class ExcelReader {
             throw new IllegalArgumentException("errors can not null, init errors after parsed");
         }
 
-        List<T> list = read0(errors,parsed, filename, stream);
+        List<Field> paraFields = new ArrayList<>();
+        List<T> list = read0(errors,parsed, paraFields, filename, stream);
 
         repeated(parsed, list);
 
@@ -37,7 +38,7 @@ public class ExcelReader {
 
         List<String> nonRepeatedProps = parseNonRepeateableProps(parsed);
 
-        return new Result<T>(list, nonRepeatedProps);
+        return new Paras<T>(list, nonRepeatedProps,paraFields);
 
     }
 
@@ -85,7 +86,9 @@ public class ExcelReader {
     }
 
 
-    private static <T> List<T> read0(Errors errors, Parsed parsed, String filename, InputStream stream) throws Exception {
+    private static <T> List<T> read0(Errors errors, Parsed parsed,
+                                     List<Field> paraFields,
+                                     String filename, InputStream stream) throws Exception {
 
         List<T> list = new ArrayList<>();
 
@@ -128,6 +131,8 @@ public class ExcelReader {
                 }
                 metaMap.put(i, meta);
                 errors.getMetas().add(meta);
+                Field field = parsed.getFieldByMeta(meta);
+                paraFields.add(field);
                 i++;
             }
 

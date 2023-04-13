@@ -28,6 +28,7 @@ public class Parsed {
     private final Map<Field, Boolean> nonRepeatableMap = new HashMap<>();
     private final Map<Field, String> metaMap = new HashMap<>();
 
+
     public Class<? extends Templated> getClzz() {
         return clzz;
     }
