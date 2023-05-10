@@ -277,10 +277,10 @@ public class NonRepeatableFilter {
                         Object v = field.get(para);
                         if (vSet.contains(v)) {
                             Templated template = (Templated) para;
-                            CellError error = new CellError();
-                            error.setMeta(parsed.getMetaMap().get(field));
-                            error.setError(v + "," + parsed.getExistError());
-                            template.getRowError().getCellErrors().add(error);
+                            template.appendError(
+                                    parsed.getMetaByProp(prop),
+                                    v + "," + parsed.getExistError()
+                            );
                             continue;
                         }
                     } catch (Exception e) {

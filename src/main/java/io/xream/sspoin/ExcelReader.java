@@ -65,16 +65,13 @@ public class ExcelReader {
             if (nonRepeated) {
                 Set<String> set = new HashSet<>();
                 for (Object t : list) {
-                    Templated obj = (Templated) t;
+                    Templated template = (Templated) t;
                     try {
-                        Object o = field.get(obj);
+                        Object o = field.get(template);
                         String v = String.valueOf(o);
                         if (!set.add(v)) {
                             String meta = parsed.getMetaMap().get(field);
-                            CellError error = new CellError();
-                            error.setMeta(meta);
-                            error.setError(v + "," + parsed.getRepeatedError());
-                            obj.getRowError().getCellErrors().add(error);
+                            template.appendError(meta,v + "," + parsed.getRepeatedError());
                         }
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
