@@ -191,10 +191,6 @@ public class ExcelReader {
                     if (isRequired &&
                             (value == null || StringUtils.isBlank(value + ""))
                     ) { //BLANK
-//                        CellError error = new CellError();
-//                        error.setMeta(meta);
-//                        error.setError(meta + parsed.getBlankError());
-//                        template.getRowError().getCellErrors().add(error);
                         template.appendError(meta,meta + parsed.getBlankError());
                     } else {
                         String str = null;
@@ -225,10 +221,6 @@ public class ExcelReader {
                                 bg = new BigDecimal(str);
                             }
                             if (bg.compareTo(BigDecimal.ZERO) == 0 && isRequired) {
-//                                CellError error = new CellError();
-//                                error.setMeta(meta);
-//                                error.setError(meta + parsed.getZeroError());
-//                                template.getRowError().getCellErrors().add(error);
                                 template.appendError(meta,meta + parsed.getZeroError());
                             } else {
                                 if (field.getType() == Long.class || field.getType() == long.class) {
