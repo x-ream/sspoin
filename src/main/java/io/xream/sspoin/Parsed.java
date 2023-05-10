@@ -27,6 +27,7 @@ public class Parsed {
     private final Map<String, Field> metaFieldMap = new HashMap<>();
     private final Map<Field, Boolean> nonRepeatableMap = new HashMap<>();
     private final Map<Field, String> metaMap = new HashMap<>();
+    private final Map<String, String> propMetaMap = new HashMap<>();
 
 
     public Class<? extends Templated> getClzz() {
@@ -131,6 +132,7 @@ public class Parsed {
 
     public void putMeta(Field field, String meta) {
         metaMap.put(field, meta);
+        propMetaMap.put(field.getName(),meta);
     }
 
     public Field getFieldByMeta(String key) {
@@ -155,6 +157,10 @@ public class Parsed {
 
     public Map<Field, String> getMetaMap() {
         return metaMap;
+    }
+
+    public String getMetaByProp(String prop) {
+        return propMetaMap.get(prop);
     }
 
     public static Parsed of(Class<? extends Templated> templateClzz) {

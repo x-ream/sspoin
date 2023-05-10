@@ -170,9 +170,9 @@ public class ExcelReader {
                         || (notBlankObj instanceof String && StringUtils.isBlank(String.valueOf(notBlankObj))))
                     continue;
 
-                Templated obj = parsed.getClzz().newInstance();
-                list.add((T) obj);
-                obj.setRowNum(startRow);
+                Templated template = parsed.getClzz().newInstance();
+                list.add((T) template);
+                template.setRowNum(startRow);
 
                 // map to templated object
                 for (Map.Entry<Integer, Object> entry : dataMap.entrySet()) {
@@ -194,30 +194,32 @@ public class ExcelReader {
                     if (isRequired &&
                             (value == null || StringUtils.isBlank(value + ""))
                     ) { //BLANK
-                        CellError error = new CellError();
-                        error.setMeta(meta);
-                        error.setError(meta + parsed.getBlankError());
-                        obj.getRowError().getCellErrors().add(error);
+//                        CellError error = new CellError();
+//                        error.setMeta(meta);
+//                        error.setError(meta + parsed.getBlankError());
+//                        template.getRowError().getCellErrors().add(error);
+                        template.appendError(meta,meta + parsed.getBlankError());
                     } else {
                         String str = null;
                         if (value != null) {
                             str = String.valueOf(value);
                         }
                         if (field.getType() == String.class) {
-                            field.set(obj, str);
+                            field.set(template, str);
                         } else if (field.getType() == Boolean.class || field.getType() == boolean.class) {
                             int bn = Integer.valueOf(str);
-                            field.set(obj, bn == 0 ? false : true);
+                            field.set(template, bn == 0 ? false : true);
                         } else if (field.getType() == Date.class) {
                             try {
                                 Date date = parsed.getDateFormat().parse(str);
-                                field.set(obj, date);
+                                field.set(template, date);
                             } catch (Exception e) {
                                 if (isRequired) {
-                                    CellError error = new CellError();
-                                    error.setMeta(meta);
-                                    error.setError(str + " ?|(" + parsed.getDateFormat().toPattern() + ")");
-                                    obj.getRowError().getCellErrors().add(error);
+//                                    CellError error = new CellError();
+//                                    error.setMeta(meta);
+//                                    error.setError(str + " ?|(" + parsed.getDateFormat().toPattern() + ")");
+//                                    template.getRowError().getCellErrors().add(error);
+                                    template.appendError(meta, str + " ?|(" + parsed.getDateFormat().toPattern() + ")");
                                 }
                             }
                         } else {
@@ -226,19 +228,20 @@ public class ExcelReader {
                                 bg = new BigDecimal(str);
                             }
                             if (bg.compareTo(BigDecimal.ZERO) == 0 && isRequired) {
-                                CellError error = new CellError();
-                                error.setMeta(meta);
-                                error.setError(meta + parsed.getZeroError());
-                                obj.getRowError().getCellErrors().add(error);
+//                                CellError error = new CellError();
+//                                error.setMeta(meta);
+//                                error.setError(meta + parsed.getZeroError());
+//                                template.getRowError().getCellErrors().add(error);
+                                template.appendError(meta,meta + parsed.getZeroError());
                             } else {
                                 if (field.getType() == Long.class || field.getType() == long.class) {
-                                    field.set(obj, bg.longValue());
+                                    field.set(template, bg.longValue());
                                 } else if (field.getType() == Integer.class || field.getType() == int.class) {
-                                    field.set(obj, bg.intValue());
+                                    field.set(template, bg.intValue());
                                 } else if (field.getType() == Double.class || field.getType() == double.class) {
-                                    field.set(obj, bg.doubleValue());
+                                    field.set(template, bg.doubleValue());
                                 } else if (field.getType() == BigDecimal.class) {
-                                    field.set(obj, bg);
+                                    field.set(template, bg);
                                 } else {
                                     throw new IllegalStateException("not supported field type: " + field.getName() + "," + field.getType());
                                 }
