@@ -199,7 +199,10 @@ public class ExcelReader {
                         error.setError(meta + parsed.getBlankError());
                         obj.getRowError().getCellErrors().add(error);
                     } else {
-                        String str = String.valueOf(value);
+                        String str = null;
+                        if (value != null) {
+                            str = String.valueOf(value);
+                        }
                         if (field.getType() == String.class) {
                             field.set(obj, str);
                         } else if (field.getType() == Boolean.class || field.getType() == boolean.class) {
@@ -218,7 +221,10 @@ public class ExcelReader {
                                 }
                             }
                         } else {
-                            BigDecimal bg = new BigDecimal(str);
+                            BigDecimal bg = BigDecimal.ZERO;
+                            if (StringUtils.isNotBlank(str)) {
+                                bg = new BigDecimal(str);
+                            }
                             if (bg.compareTo(BigDecimal.ZERO) == 0 && isRequired) {
                                 CellError error = new CellError();
                                 error.setMeta(meta);
