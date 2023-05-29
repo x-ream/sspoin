@@ -143,12 +143,6 @@ public class EquipTemplate implements Templated {
         Errors ro = JsonX.toObject(errStr,Errors.class);
 
         String fileName = ro.getFileName();
-        if (fileName.endsWith(".xls")) {
-            fileName += "x";
-        } else if (fileName.endsWith(".XLS")) {
-            fileName += "X";
-        }
-
         byte[] buffer = ro.toBuffer();
 
         response.reset();
