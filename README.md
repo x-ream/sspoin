@@ -138,7 +138,7 @@ public class EquipTemplate implements Templated {
 ### 3. 请求下载错误数据excel文件
 ```java
     @RequestMapping("/download")
-    public void download(@RequestParam("errors") ErrorsRO ro, HttpServletResponse response) throws Exception {
+    public void download(@RequestParam("errors") String errStr, HttpServletResponse response) throws Exception {
 
         String fileName = ro.getFileName();
         if (fileName.endsWith(".xls")) {
@@ -147,6 +147,7 @@ public class EquipTemplate implements Templated {
             fileName += "X";
         }
 
+        Errors ro = JsonX.toObject(errStr,Errors.class)
         byte[] buffer = ro.toBuffer();
 
         response.reset();
