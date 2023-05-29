@@ -36,14 +36,14 @@ public class ExcelReader {
 
         ErrorAppender.append(errors, list);
 
-        List<String> nonRepeatedProps = parseNonRepeateableProps(parsed);
+        List<String> nonRepeatedProps = parseNonRepeatableProps(parsed);
 
         return new Paras<T>(list, nonRepeatedProps, paraFields);
 
     }
 
 
-    private static List<String> parseNonRepeateableProps(Parsed parsed) {
+    private static List<String> parseNonRepeatableProps(Parsed parsed) {
         List<String> list = new ArrayList<String>();
         for (Map.Entry<Field, Boolean> entry : parsed.getNonRepeatableMap().entrySet()) {
             Field field = entry.getKey();
