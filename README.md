@@ -147,7 +147,7 @@ public class EquipTemplate implements Templated {
             fileName += "X";
         }
 
-        Errors ro = JsonX.toObject(errStr,Errors.class)
+        Errors ro = JsonX.toObject(errStr,Errors.class);
         byte[] buffer = ro.toBuffer();
 
         response.reset();
