@@ -30,7 +30,7 @@ public class ExcelReader {
         }
 
         List<Field> paraFields = new ArrayList<>();
-        List<T> list = read0(errors,parsed, paraFields, filename, stream);
+        List<T> list = read0(errors, parsed, paraFields, filename, stream);
 
         repeated(parsed, list);
 
@@ -38,7 +38,7 @@ public class ExcelReader {
 
         List<String> nonRepeatedProps = parseNonRepeateableProps(parsed);
 
-        return new Paras<T>(list, nonRepeatedProps,paraFields);
+        return new Paras<T>(list, nonRepeatedProps, paraFields);
 
     }
 
@@ -59,22 +59,59 @@ public class ExcelReader {
 
         Map<Field, Boolean> map = parsed.getNonRepeatableMap();
 
-        for (Map.Entry<Field, Boolean> entry : map.entrySet()) {
-            Field field = entry.getKey();
-            Boolean nonRepeated = entry.getValue();
-            if (nonRepeated) {
-                Set<String> set = new HashSet<>();
-                for (Object t : list) {
-                    Templated template = (Templated) t;
-                    try {
-                        Object o = field.get(template);
-                        String v = String.valueOf(o);
-                        if (!set.add(v)) {
-                            String meta = parsed.getMetaMap().get(field);
-                            template.appendError(meta,v + "," + parsed.getRepeatedError());
+        if (parsed.isAbortAllRepeated()) {//not easy to update data in db
+
+            for (Map.Entry<Field, Boolean> entry : map.entrySet()) {
+                Field field = entry.getKey();
+                Boolean nonRepeated = entry.getValue();
+                if (nonRepeated) {
+                    Map<String, List<Templated>> cvMap = new HashMap<>();
+                    for (Object t : list) {
+                        Templated template = (Templated) t;
+                        try {
+                            Object o = field.get(template);
+                            String v = String.valueOf(o);
+                            List<Templated> tList = cvMap.get(v);
+                            if (tList == null) {
+                                tList = new ArrayList<>();
+                                cvMap.put(v, tList);
+                            }
+                            tList.add(template);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
                         }
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
+                    }
+                    for (Map.Entry<String,List<Templated>> cvEntry : cvMap.entrySet()) {
+                        String v = cvEntry.getKey();
+                        List<Templated> tList = cvEntry.getValue();
+                        if (tList.size() > 1) { // repeated
+                            String meta = parsed.getMetaMap().get(field);
+                            for (Templated t : tList) {
+                                t.appendError(meta, v + "," + parsed.getRepeatedError());
+                            }
+                        }
+                    }
+                }
+            }
+
+        }else { //normal
+            for (Map.Entry<Field, Boolean> entry : map.entrySet()) {
+                Field field = entry.getKey();
+                Boolean nonRepeated = entry.getValue();
+                if (nonRepeated) {
+                    Set<String> set = new HashSet<>();
+                    for (Object t : list) {
+                        Templated template = (Templated) t;
+                        try {
+                            Object o = field.get(template);
+                            String v = String.valueOf(o);
+                            if (!set.add(v)) {
+                                String meta = parsed.getMetaMap().get(field);
+                                template.appendError(meta, v + "," + parsed.getRepeatedError());
+                            }
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -118,7 +155,7 @@ public class ExcelReader {
                 if (str.contains(parsed.getRequiredTag())) {
                     str = str.replace(parsed.getRequiredTag(), "---");
                     if (str.startsWith("---"))
-                        throw new IllegalArgumentException(value +", "+parsed.getRequiredTag() + " cat not be as prefix, put it as suffix");
+                        throw new IllegalArgumentException(value + ", " + parsed.getRequiredTag() + " cat not be as prefix, put it as suffix");
                     String[] arr = str.split("---");
                     meta = arr[0].trim();
                     requiredMap.put(i, true);
@@ -150,7 +187,13 @@ public class ExcelReader {
                                 dataMap.put(j, cell.getStringCellValue().trim());
                                 break;
                             case NUMERIC:
-                                dataMap.put(j, cell.getNumericCellValue());
+                                double v = cell.getNumericCellValue();
+                                if (DateUtil.isCellDateFormatted(cell)) {
+                                    Date date = DateUtil.getJavaDate(v);
+                                    dataMap.put(j, date);
+                                } else {
+                                    dataMap.put(j, v);
+                                }
                                 break;
                             case BOOLEAN:
                                 dataMap.put(j, cell.getBooleanCellValue());
@@ -191,37 +234,53 @@ public class ExcelReader {
                     if (isRequired &&
                             (value == null || StringUtils.isBlank(value + ""))
                     ) { //BLANK
-                        template.appendError(meta,meta + parsed.getBlankError());
+                        template.appendError(meta, meta + parsed.getBlankError());
                     } else {
-                        String str = null;
-                        if (value != null) {
-                            str = String.valueOf(value);
-                        }
                         if (field.getType() == String.class) {
+                            String str = null;
+                            if (value != null) {
+                                str = String.valueOf(value);
+                            }
                             field.set(template, str);
                         } else if (field.getType() == Boolean.class || field.getType() == boolean.class) {
-                            int bn = Integer.valueOf(str);
-                            field.set(template, bn == 0 ? false : true);
+                            if (value == null) {
+                                field.set(template, false);
+                            } else {
+                                String str = String.valueOf(value);
+                                int bn = Integer.valueOf(str);
+                                field.set(template, bn == 0 ? false : true);
+                            }
                         } else if (field.getType() == Date.class) {
-                            try {
-                                Date date = parsed.getDateFormat().parse(str);
-                                field.set(template, date);
-                            } catch (Exception e) {
-                                if (isRequired) {
-//                                    CellError error = new CellError();
-//                                    error.setMeta(meta);
-//                                    error.setError(str + " ?|(" + parsed.getDateFormat().toPattern() + ")");
-//                                    template.getRowError().getCellErrors().add(error);
-                                    template.appendError(meta, str + " ?|(" + parsed.getDateFormat().toPattern() + ")");
+                            if (value != null && value instanceof Date) {
+                                field.set(template, value);
+                            } else {
+                                try {
+                                    String str = "" + value;
+                                    Date date = parsed.getDateFormat().parse(str);
+                                    field.set(template, date);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+
+                                    String s = "";
+                                    try {
+                                        s = s + value;
+                                    } catch (Exception ee) {
+                                        ee.printStackTrace();
+                                    }
+                                    template.appendError(meta, s + " ?|text(" + parsed.getDateFormat().toPattern() + ")");
                                 }
                             }
                         } else {
                             BigDecimal bg = BigDecimal.ZERO;
+                            String str = null;
+                            if (value != null) {
+                                str = String.valueOf(value);
+                            }
                             if (StringUtils.isNotBlank(str)) {
                                 bg = new BigDecimal(str);
                             }
                             if (bg.compareTo(BigDecimal.ZERO) == 0 && isRequired) {
-                                template.appendError(meta,meta + parsed.getZeroError());
+                                template.appendError(meta, meta + parsed.getZeroError());
                             } else {
                                 if (field.getType() == Long.class || field.getType() == long.class) {
                                     field.set(template, bg.longValue());

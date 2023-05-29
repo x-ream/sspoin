@@ -70,8 +70,7 @@ public class NonRepeatableFilter {
 
 
     public static void beforeCreate(
-            Errors errors,Parsed parsed,
-            List<String> nonRepeatableProps,
+            Errors errors, Parsed parsed,
             List paraList,
             Class poClzz,
             NonRepeatableExistedCond nonRepeatableExistedCond,
@@ -96,9 +95,11 @@ public class NonRepeatableFilter {
 
         Set<String> poPropSet = poFieldNames(poClzz);
 
+        List<String> nonRepeatableProps = parsed.getNonRepeatableProps();
+
         Object cond = nonRepeatableExistedCond.build(
                 poClzz,
-                buildSelectList(poPropSet,nonRepeatableProps),
+                buildSelectList(poPropSet, nonRepeatableProps),
                 buildInConditions(poPropSet,nonRepeatableProps,paraList)
         );
 

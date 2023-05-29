@@ -13,7 +13,7 @@ public class Errors {
     private List<String> metas = new ArrayList<>();
     private List<RowError> rowErrors;
 
-    private Errors(Parsed parsed,String fileName) {
+    private Errors(Parsed parsed, String fileName) {
         this.fileName = fileName;
         this.rowOffset = parsed.getMetaRow();
         this.rowErrors = new ArrayList<>();

@@ -24,6 +24,7 @@ public @interface Template {
      * designed to refresh a piece of table only by a column
      */
     String refreshOn() default "";
+    boolean abortAllRepeated() default false;
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD})

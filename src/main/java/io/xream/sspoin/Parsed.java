@@ -4,7 +4,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,6 +26,7 @@ public class Parsed {
     private String repeatedError;
     private String existError;
     private String refreshOn;
+    private boolean abortAllRepeated;
     private final Map<String, Field> metaFieldMap = new HashMap<>();
     private final Map<Field, Boolean> nonRepeatableMap = new HashMap<>();
     private final Map<Field, String> metaMap = new HashMap<>();
@@ -151,6 +154,14 @@ public class Parsed {
         this.refreshOn = refreshOn;
     }
 
+    public boolean isAbortAllRepeated() {
+        return abortAllRepeated;
+    }
+
+    public void setAbortAllRepeated(boolean abortAllRepeated) {
+        this.abortAllRepeated = abortAllRepeated;
+    }
+
     public Map<Field, Boolean> getNonRepeatableMap() {
         return nonRepeatableMap;
     }
@@ -179,6 +190,7 @@ public class Parsed {
         parsed.setRepeatedError(template.repeatedError());
         parsed.setExistError(template.existsError());
         parsed.setRefreshOn(template.refreshOn());
+        parsed.setAbortAllRepeated(template.abortAllRepeated());
 
         Field[] fields = null;
         Object obj = null;
@@ -209,5 +221,19 @@ public class Parsed {
             parsed.putRepeated(field, row.nonRepeatable());
         }
         return parsed;
+    }
+
+    public List<String> getNonRepeatableProps(){
+
+        List<String> list = new ArrayList<>();
+
+        for  (Map.Entry<Field,Boolean> entry : nonRepeatableMap.entrySet()){
+
+            if (entry.getValue()) {
+                list.add(entry.getKey().getName());
+            }
+        }
+
+        return list;
     }
 }
