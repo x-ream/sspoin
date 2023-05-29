@@ -91,6 +91,7 @@ public class ExcelReader {
                             }
                         }
                     }
+                    cvMap.clear();
                 }
             }
 
@@ -113,6 +114,7 @@ public class ExcelReader {
                             e.printStackTrace();
                         }
                     }
+                    set.clear();
                 }
             }
         }
