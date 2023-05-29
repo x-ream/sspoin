@@ -102,13 +102,13 @@ public class EquipTemplate implements Templated {
         final String fileName = file.getOriginalFilename();
         final Parsed parsed = Parsed.of(EquipTemplate.class);//解析模板类
         final Errors errors = Errors.of(parsed, fileName);
-        Result<EquipTemplate> result = null;
+        Paras<EquipTemplate> paras = null;
         InputStream in = null;
         try {
             in = file.getInputStream();
-            result = ExcelReader.read(errors, parsed, fileName, in); //读取数据
-            if (result.getList().isEmpty()) {
-                return ResponseEntity.ok();
+            paras = ExcelReader.read(errors, parsed, fileName, in); //读取数据
+            if (paras.getList().isEmpty()) {
+                return ResponseEntity.ok(errors);
             }
         } finally {
             if (in != null) {
@@ -120,16 +120,16 @@ public class EquipTemplate implements Templated {
             }
         }
         //如果不需要更新已有的数据，就过滤掉已存在的数据
-        NonRepeatableSavingFilter.filter(
+        NonRepeatableFilter.beforeCreate(
                 errors,
                 parsed,
-                result,
-                Equipment.class,//实体类
-                this.nonRepeatableExistedCond,//查询条件构建, 获得cond
+                paras.getList(),
+                Equipment.class,
+                this.nonRepeatableSavedCond,
                 cond -> this.equipmentFindService.listResultMap((Criteria.ResultMapCriteria) cond)
         );
 
-        // TODO: 写入数据库 result.getList()
+        // TODO: 写入数据库 paras.getList()
         
         // 返回 errors
         return ResponseEntity.ok(errors);
@@ -140,6 +140,8 @@ public class EquipTemplate implements Templated {
     @RequestMapping("/download")
     public void download(@RequestParam("errors") String errStr, HttpServletResponse response) throws Exception {
 
+        Errors ro = JsonX.toObject(errStr,Errors.class);
+
         String fileName = ro.getFileName();
         if (fileName.endsWith(".xls")) {
             fileName += "x";
@@ -147,7 +149,6 @@ public class EquipTemplate implements Templated {
             fileName += "X";
         }
 
-        Errors ro = JsonX.toObject(errStr,Errors.class);
         byte[] buffer = ro.toBuffer();
 
         response.reset();
