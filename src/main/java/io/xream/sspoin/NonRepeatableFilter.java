@@ -272,7 +272,7 @@ public class NonRepeatableFilter {
                 if (vSet == null)
                     continue;
 
-                for (Object para : paraList)
+                for (Object para : paraList) {
                     try {
                         Field field = parsed.getFieldByMeta(prop);
                         Object v = field.get(para);
@@ -287,6 +287,7 @@ public class NonRepeatableFilter {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                }
             }
         }
         ErrorAppender.append(errors,paraList);
