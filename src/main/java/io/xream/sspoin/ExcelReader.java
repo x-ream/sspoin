@@ -70,7 +70,11 @@ public class ExcelReader {
                         Templated template = (Templated) t;
                         try {
                             Object o = field.get(template);
+                            if (o == null)
+                                continue;
                             String v = String.valueOf(o);
+                            if (StringUtils.isBlank(v))
+                                continue;
                             List<Templated> tList = cvMap.get(v);
                             if (tList == null) {
                                 tList = new ArrayList<>();
@@ -105,7 +109,11 @@ public class ExcelReader {
                         Templated template = (Templated) t;
                         try {
                             Object o = field.get(template);
+                            if (o == null)
+                                continue;
                             String v = String.valueOf(o);
+                            if (StringUtils.isBlank(v))
+                                continue;
                             if (!set.add(v)) {
                                 String meta = parsed.getMetaMap().get(field);
                                 template.appendError(meta, v + "," + parsed.getRepeatedError());
