@@ -124,7 +124,7 @@ public class EquipTemplate implements Templated {
                 errors,
                 parsed,
                 paras.getList(),
-                Equipment.class,
+                Equipment.class,null,
                 this.nonRepeatableSavedCond,
                 cond -> this.equipmentFindService.listResultMap((Criteria.ResultMapCriteria) cond)
         );
