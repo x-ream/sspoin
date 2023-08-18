@@ -73,6 +73,7 @@ public class NonRepeatableFilter {
             Errors errors, Parsed parsed,
             List paraList,
             Class poClzz,
+            List<String> poIgnoredPropList,
             NonRepeatableExistedCond nonRepeatableExistedCond,
             ExistedFinder existedFinder) {
 
@@ -93,7 +94,7 @@ public class NonRepeatableFilter {
             throw new IllegalArgumentException("savedFinder can not null");
         }
 
-        Set<String> poPropSet = poFieldNames(poClzz);
+        Set<String> poPropSet = poFieldNames(poClzz,poIgnoredPropList);
 
         List<String> nonRepeatableProps = parsed.getNonRepeatableProps();
 
@@ -110,7 +111,7 @@ public class NonRepeatableFilter {
         handleRepeated(poPropSet,poExistList,errors,parsed,nonRepeatableProps,paraList);
     }
 
-    private static Set<String> poFieldNames(Class poClzz) {
+    private static Set<String> poFieldNames(Class poClzz, List<String> poIgnoredPropList) {
 
         if (poClzz == null)
             throw new IllegalArgumentException("PO Class must not be null");
@@ -118,6 +119,8 @@ public class NonRepeatableFilter {
         Field[] arr = poClzz.getDeclaredFields();
         Set<String> propSet = new HashSet<>();
         for (Field field : arr) {
+            if (poIgnoredPropList!=null && poIgnoredPropList.contains(field.getName()))
+                continue;
             propSet.add(field.getName());
         }
         return propSet;
